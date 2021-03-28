@@ -24,7 +24,7 @@ const connection = mongoose.connection;
 connection.once("open", () => {
   console.log("mongodb connected!!!!!!!!!");
 });
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 
 app.use("/user", userRoute);
