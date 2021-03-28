@@ -3,6 +3,7 @@ const User = require("../models/users.model");
 const config = require("../config");
 const jwt = require("jsonwebtoken");
 const middleware = require("../middleware");
+const bcrypt = require("bcrypt"); 
 const router = express.Router();
 
 router.route("/:username").get(middleware.checkToken, (req, res) => {
@@ -30,7 +31,7 @@ router.route("/checkusername/:username").get((req, res) => {
       });
   });
 });
-
+// User login
 router.route("/login").post((req, res) => {
   User.findOne({ username: req.body.username }, (err, result) => {
     if (err) return res.status(500).json({ msg: err });
@@ -51,13 +52,82 @@ router.route("/login").post((req, res) => {
   });
 });
 
-router.route("/register").post((req, res) => {
-  console.log("inside the register");
+// Admin login
+router.route("/login-admin").post(async (req, res) => {});
+
+//Super Admin login
+router.route("/login-super-admin").post(async (req, res) => {});
+
+
+
+// Users Registeration
+router.route("/register").post(async(req, res) => {
+  // const password = await bcrypt.hash(req.body.password, 12);
+  // bcrypt.genSalt(10,function(err,salt){  
+  //        bcrypt.hash(req.body.password,salt,function(err,hash){  
+  //        var userr = new userModel({  
+  //           email:req.body.email,  
+  //           name:req.body.name,  
+  //           password:hash  
+  //       });  
+  bcrypt.hash(req.body.password, 12, function (err, hash) {
+    // Store hash in your password DB.
+    const role = "user";
+    // console.log(req);
+    const user = new User({
+      username: req.body.username,
+      password: hash,
+      email: req.body.email,
+      role: role,
+    });
+    user
+      .save()
+      .then(() => {
+        console.log("user registered");
+        console.log(req);
+        res.status(200).json("ok");
+      })
+      .catch((err) => {
+        res.status(403).json({ msg: err });
+      });
+  });
+  // Admin Registeration
+  router.route("/register-admin").post(async (req, res) => {
+    // const hashedPassword = await bcrypt.hash(req.body.password,12);
+    const role = "admin";
+    // console.log(req);
+    const user = new User({
+      username: req.body.username,
+      password: req.body.password,
+      email: req.body.email,
+      role: role,
+    });
+    user
+      .save()
+      .then(() => {
+        console.log("user registered");
+        console.log(req);
+        res.status(200).json("ok");
+      })
+      .catch((err) => {
+        res.status(403).json({ msg: err });
+      });
+  });
+  
+});
+
+
+
+// Super Admin Registeration
+router.route("/register-super-admin").post(async (req, res) => {
+  // const hashedPassword = await bcrypt.hash(req.body.password,12);
+  const role = "superadmin";
   // console.log(req);
   const user = new User({
     username: req.body.username,
     password: req.body.password,
     email: req.body.email,
+    role: role,
   });
   user
     .save()
@@ -67,10 +137,24 @@ router.route("/register").post((req, res) => {
       res.status(200).json("ok");
       
     })
-    .catch((err) => {
+    .catch((err) => { 
       res.status(403).json({ msg: err });
     });
 });
+
+
+//Profile route 
+router.route("/profile").get(async (req, res) => {});
+
+
+//User Protected route
+router.route("/user-protected").post(async (req, res) => {});
+//Admin Protected route
+router.route("/admin-protected").post(async (req, res) => {});
+//Super Admin Protected route
+router.route("/super-admin-protected").post(async (req, res) => {});
+
+
 
 router.route("/update/:username").patch((req, res) => {
   User.findOneAndUpdate(
